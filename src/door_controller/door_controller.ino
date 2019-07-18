@@ -44,6 +44,57 @@ uint32_t calculateCRC32( const uint8_t *data, size_t length ) {
   return crc;
 }
 
+#define RESISTOR_ONE 100.0
+#define RESISTOR_TWO 1700.0
+#define RESISTOR_SENSE 0.1
+#define MAX_OPERATING_AMPS 1.5
+#define OP_AMP_OUTPUT_PIN 10
+#define MOTOR_POWER_PIN 11
+#define MOTOR_DIRECTION_PIN 12
+#define DOOR_LOCKED_PIN 13
+#define MAGNET_PIN 5
+
+char * central_server = "http://10.0.0.59";
+
+MotorController door_motor(RESISTOR_ONE, RESISTOR_TWO, RESISTOR_SENSE,
+                  MAX_OPERATING_AMPS, OP_AMP_OUTPUT_PIN, MOTOR_POWER_PIN,
+                  MOTOR_DIRECTION_PIN, DOOR_LOCKED_PIN);
+DoorSensor door_sensor(MAGNET_PIN);
+
+String makeStatusRequest(){
+  //Get the door sensor information to send to the request
+
+
+  HTTPClient http;
+  bool door_open = door_sensor.isOpen();
+  bool door_locked = door_motor.isLocked();
+  
+  http.begin(central_server);  //Specify destination for HTTP request
+  http.addHeader("Content-Type", "text/plain");             //Specify content-type header
+
+  String message = "door_open:" + String(door_open) + "|" + "door_locked:" + String(door_locked);
+  int responseCode = http.POST(message);   //send POST request
+  
+  if(responseCode>0){
+  
+    String response = http.getString();                       //Get the response to the request
+    //So basically we need to return a few values here
+    //the lock can be in one of a few states
+    //either it can be in lock, unlock , do nothing
+    return response;
+    
+  }else{
+  
+    Serial.print("Error on sending POST: ");
+    Serial.println(responseCode);
+    return "error";  
+  }
+  
+  http.end();  //Free resources
+
+  
+}
+  
 void setup() {
 
   bool rtcValid = false;
@@ -143,7 +194,7 @@ void setup() {
   // configure traged server and url
   //http.begin("https://www.howsmyssl.com/a/check", ca); //HTTPS
   http.begin("http://example.com/index.html"); //HTTP
-
+  http.addHeader("Content-Type", "text/plain"); //Specify content-type header
   Serial.println("[HTTP] GET...\n");
   // start connection and send HTTP header
   int httpCode = http.GET();
