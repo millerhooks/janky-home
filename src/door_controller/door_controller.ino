@@ -13,8 +13,8 @@
 #define TIME_TO_SLEEP  5        /* Time ESP32 will go to sleep (in seconds) */
 #define SLEEPTIME uS_TO_S_FACTOR * TIME_TO_SLEEP
 RTC_DATA_ATTR int bootCount = 0;
-char * WLAN_SSID = "linksys2";
-char * WLAN_PASSWD = "srilanka";
+char * WLAN_SSID = "ssid";
+char * WLAN_PASSWD = "pass";
 struct RtcData{
   uint32_t crc32;   // 4 bytes
   int32_t channel;  // 4 byte,   8 in total
