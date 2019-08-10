@@ -6,7 +6,7 @@
 class DoorSensor{
 public:
   DoorSensor(int magnet_pin);
-  bool isOpen();
+  int isOpen();
 private:
   int magnet_pin;
 };
@@ -16,6 +16,6 @@ DoorSensor::DoorSensor(int magnet_pin){
   pinMode(this->magnet_pin, INPUT_PULLDOWN);
 }
 
-bool DoorSensor::isOpen(){
+int DoorSensor::isOpen(){
   return digitalRead(this->magnet_pin);
 }

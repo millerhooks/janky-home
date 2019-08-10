@@ -29,12 +29,13 @@ public:
   void closeLockState();
   void openLockState();
   void updateState();
-  bool isLocked();
+  int isLocked();
 private:
   unsigned long started_state = 0;
   unsigned long minimum_run_time = 150; //in ms
 
-  bool locking;
+  int locking = false;
+  int unlocking = false;
   double resistor_one;
   double resistor_two;
   double resistor_sense;
@@ -45,7 +46,7 @@ private:
   int motor_power_pin; //controls the mosfet that powers the motor
   int motor_direction_pin; //the pin that controls a transistor to determine the direction of rotation via a pair of relays
   int getCurrentMonitorReading(); //returns an analog value between 1 and 4095 (we have a 12bit adc on the esp32)
-  
+
   double getPowerConsumption(); //returns power consumption in amps
 };
 
@@ -60,13 +61,13 @@ MotorController::MotorController(double resistor_one, double resistor_two, doubl
   this->op_amp_output_pin = op_amp_output_pin;
   this->lock_closed_pin = lock_closed_pin;
   pinMode(this->lock_closed_pin, INPUT_PULLDOWN);
-  
+
   this->motor_power_pin = motor_power_pin;
   pinMode(this->op_amp_output_pin, OUTPUT);
-  
+
   this->motor_direction_pin = motor_direction_pin;
   pinMode(this->op_amp_output_pin, OUTPUT);
- 
+
 }
 
 double MotorController::getPowerConsumption(){
@@ -84,25 +85,28 @@ void MotorController::updateState(){
     digitalWrite(this->motor_power_pin,LOW);
     digitalWrite(this->motor_direction_pin,LOW);
     this->locking = false;
+    this->unlocking = false;
   }
 }
 
 void MotorController::openLockState(){
   //when movement begins
-  this->locking = true;
+  this->locking = false;
+  this->unlocking = true;
   started_state = millis();
   digitalWrite(this->motor_direction_pin,LOW);
   digitalWrite(this->motor_power_pin,HIGH);
 
 }
 
-bool MotorController::isLocked(){
-  return digitalRead(this->lock_closed_pin);
+int MotorController::isLocked(){
+  return digitalRead(this->lock_closed_pin) || this->unlocking ;    
 }
 void MotorController::closeLockState(){
   //when movement begins
   started_state = millis();
-
+  this->locking = true;
+  this->unlocking = false;
   digitalWrite(this->motor_direction_pin,HIGH);
   digitalWrite(this->motor_power_pin,HIGH);
 
