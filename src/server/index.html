@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script>
+
+    var STATUS_DELAY = 500; //ms
+
+    function tryFinishStatus(door_name){
+      $.get( "lock_status?door_name=" + door_name, function( data ) {
+
+        if(data.status != true){
+          setTimeout(function(){
+            tryFinishStatus(door_name);
+          }
+          ,STATUS_DELAY);
+        }else{
+          $("#door_" + cur_door_name + " .loader").hide();
+        }
+      });
+    }
+
+    var cur_door_name;
+      function lockDoor(door_name){
+        cur_door_name = door_name;
+        lock = $("#door_" + cur_door_name).find("input").is(':checked');
+        if(lock){
+          $.get( "close_lock?door_name=" + door_name, function( data ) {
+            $("#door_" + cur_door_name).find(" .loader").show();
+            tryFinishStatus(cur_door_name);
+          });
+        }else{
+          $.get( "open_lock?door_name=" + door_name, function( data ) {
+            $("#door_" + cur_door_name).find(" .loader").show();
+            tryFinishStatus(cur_door_name);
+          });
+        }
+
+      }
+
+      function makeDoor(results){
+        for (door_index in results) {
+          var door = results[door_index];
+          var html = '<div id="door_' +  door_index + '" class="door">' + door_index + '\
+            <label class="switch">\
+<input type="checkbox" onclick="lockDoor(\'' + door_index + '\')"' + (door.door_locked ? ' checked="checked"' : '')  + '>\
+<span class="slider round"> \
+<span class="lock"> \
+</span>\
+</label>          <div class="loader"></div>\
+                      </div>'
+        }
+        $("#doors").html(html);
+      }
+
+      $( document ).ready(function() {
+        $.getJSON("door-status", function(result){
+          makeDoor(result);
+        });
+      });
+
+    </script>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <style>
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 120px;
+  height: 78px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 56px;
+  width: 56px;
+  left: 8px;
+  bottom: 8px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(50px);
+  -ms-transform: translateX(50px);
+  transform: translateX(50px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+.loader {
+  position:relative;
+  top:14px;
+  border: 6px solid #f3f3f3; /* Light grey */
+  border-top: 6px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+  display:inline-block;
+  display:none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* :::::::::::::: Required CSS */
+/* Locked */
+.lock {
+  width: 24px;
+  height: 21px;
+  border: 3px solid var(--locked-color);
+  border-radius: 5px;
+  position: relative;
+  cursor: pointer;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}
+.lock:after {
+  content: "";
+  display: block;
+  background: var(--locked-color);
+  width: 3px;
+  height: 7px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -3.5px 0 0 -2px;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}
+.lock:before {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  bottom: 100%;
+  position: absolute;
+  left: 50%;
+  margin-left: -8px;
+  border: 3px solid var(--locked-color);
+  border-top-right-radius: 50%;
+  border-top-left-radius: 50%;
+  border-bottom: 0;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out;
+}
+/* Locked Hover */
+.lock:hover:before {
+  height: 12px;
+}
+/* Unlocked */
+.unlocked {
+  transform: rotate(10deg);
+}
+.unlocked:before {
+  bottom: 130%;
+  left: 31%;
+  margin-left: -11.5px;
+  transform: rotate(-45deg);
+}
+.unlocked,
+.unlocked:before {
+  border-color: var(--unlocked-color);
+}
+.unlocked:after {
+  background: var(--unlocked-color);
+}
+/* Unlocked Hover */
+.unlocked:hover {
+  transform: rotate(3deg);
+}
+.unlocked:hover:before {
+  height: 10px;
+  left: 40%;
+  bottom: 124%;
+  transform: rotate(-30deg);
+}
+</style>
+    <title>Janky Home!</title>
+  </head>
+  <body>
+    <div id="doors">
+
+    </div>
+
+  </body>
+</html>

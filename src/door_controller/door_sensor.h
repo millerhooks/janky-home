@@ -17,5 +17,5 @@ DoorSensor::DoorSensor(int magnet_pin){
 }
 
 int DoorSensor::isOpen(){
-  return digitalRead(this->magnet_pin);
+  return !digitalRead(this->magnet_pin);
 }

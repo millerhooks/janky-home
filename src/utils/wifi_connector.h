@@ -2,10 +2,10 @@
 
 #include <WiFi.h>
 
-
+//file has to be copied in each time... can't use relative paths in arduino.
 
 #define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP 100        /* Time ESP32 will go to sleep (in seconds) */ //deprecated now using 555
+#define TIME_TO_SLEEP 15        /* Time ESP32 will go to sleep (in seconds) */
 #define SLEEPTIME uS_TO_S_FACTOR * TIME_TO_SLEEP
 RTC_DATA_ATTR int bootCount = 0;
 char * WLAN_SSID = "linksys2";
@@ -54,12 +54,12 @@ void connectWifi(){
   //WiFi.forceSleepBegin();
   //delay( 1 );
 
-//  Serial.begin(115200);
-//  Serial.println("STarting!!!");
+  Serial.begin(115200);
+  Serial.println("STarting!!!");
 
   //Increment boot number and print it every reboot
   ++bootCount;
-//  Serial.println("Boot number: " + String(bootCount));
+  Serial.println("Boot number: " + String(bootCount));
 
 
   IPAddress ip( 10, 0, 0, 188 );
@@ -78,7 +78,7 @@ void connectWifi(){
   WiFi.config( ip, gateway, subnet );
   if( rtcValid ) {
     // The RTC data was good, make a quick connection
-//    Serial.println("Reusing RTC DATA!");
+    Serial.println("Reusing RTC DATA!");
     WiFi.begin( WLAN_SSID, WLAN_PASSWD, rtcData.channel, rtcData.bssid, true );
   }
   else {
@@ -133,14 +133,14 @@ void connectWifi(){
 
 void disconnectAndSleep(){
   esp_sleep_enable_timer_wakeup(SLEEPTIME);
-//  Serial.println("Going to sleep now");
-//  delay(10); //without this delay i was not seeing this output
+  Serial.println("Going to sleep now");
+  delay(10); //without this delay i was not seeing this output
 
   WiFi.disconnect( true );
-//  delay( 1 );
+  delay( 1 );
 
 // WAKE_RF_DISABLED to keep the WiFi radio disabled when we wake up
   ESP.deepSleep( SLEEPTIME);
 
-//  Serial.println("This will never be printed");
+  Serial.println("This will never be printed");
 }
